@@ -1,135 +1,132 @@
-# Turborepo starter
+# 🧠 personal‑kg
 
-This Turborepo starter is maintained by the Turborepo core team.
+> **darkhanakh’s self‑hosted personal AI stack** — builds and maintains your own knowledge graph, vector memory, and agentic layer to understand, recall, and act on everything about you.
 
-## Using this example
+---
 
-Run the following command:
+## 🚀 Overview
 
-```sh
-npx create-turbo@latest
+**personal‑kg** is a TypeScript‑native, local‑first AI monorepo.  
+It ingests your notes into a **graph + vector memory**, powers them with **LLMs**, and exposes an **API + UI** for querying and reflection.
+
+This repo runs entirely on your machine for privacy and efficiency.  
+The stack includes:
+
+- **apps/web** → Next.js frontend (chat + dashboard)  
+- **apps/server** → NestJS backend (API + retrieval)  
+- **packages/knowledge** → NodeRAG ingestion + graph logic  
+- **packages/configs** → ESLint / TS config shared by all packages  
+
+---
+
+## 🧩 Architecture
+
+```mermaid
+graph LR
+    A[notes/<br/>Human layer] --> B[packages/knowledge<br/>Parser + Indexer]
+    B --> C[(Neo4j + Qdrant<br/>Memory layer)]
+    B --> D[apps/server<br/>API & Agents]
+    D --> E[apps/web<br/>Chat / UI]
+    
+    style A fill:#e1f5ff,stroke:#01579b,stroke-width:2px
+    style B fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    style C fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    style D fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px
+    style E fill:#fce4ec,stroke:#880e4f,stroke-width:2px
 ```
 
-## What's inside?
+- **Graph DB:** Neo4j (entities, relationships)
+- **Vector DB:** Qdrant (semantic memory)
+- **LLM runtime:** Local (Ollama) or remote (GPT‑5)
+- **Monorepo toolchain:** Turborepo + pnpm + TypeScript
 
-This Turborepo includes the following packages/apps:
+---
 
-### Apps and Packages
+## ⚙️ Setup
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
+### 1. Clone & Install
+```bash
+git clone https://github.com/darkhanakh/personal-kg.git
+cd personal-kg
+pnpm install
 ```
 
-You can build a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
-
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build --filter=docs
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-```
-
-### Develop
-
-To develop all apps and packages, run the following command:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
+### 2. Configure Environment
+Create `.env` in project root:
+```bash
+NEO4J_URI=bolt://localhost:7687
+NEO4J_USER=neo4j
+NEO4J_PASS=password
+QDRANT_URL=http://localhost:6333
+OPENAI_API_KEY=           # optional if using remote model
+NOTES_DIR=./private/notes
 ```
 
-You can develop a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
-
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev --filter=web
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
+### 3. Start Databases
+```bash
+docker compose -f docker/docker-compose.yml up -d
 ```
 
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo login
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
+### 4. Develop
+```bash
+# run everything (frontend + backend)
+pnpm turbo dev
 ```
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+Individual scopes:
+```bash
+# backend only
+pnpm turbo dev --filter=server
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo link
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
+# frontend only
+pnpm turbo dev --filter=web
 ```
 
-## Useful Links
+---
 
-Learn more about the power of Turborepo:
+## 🧠 Ingestion Flow
 
-- [Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.com/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.com/docs/reference/configuration)
-- [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+1. Add Markdown notes under `private/notes/`  
+2. Run indexer script (coming soon) to parse, chunk, and embed  
+3. View relationships in Neo4j Browser  
+4. Query via the chat UI on `localhost:3000`
+
+All personal data under `/private` is `.gitignored`  
+— it stays **local and versioned privately**.
+
+---
+
+## 🐳 Docker Services
+
+| Service | Port | Purpose |
+|----------|------|---------|
+| **neo4j** | 7474 / 7687 | Knowledge graph |
+| **qdrant** | 6333 | Vector memory |
+| **server** | 8000 | NestJS API |
+| **web** | 3000 | Next.js UI |
+
+---
+
+## 🧾 Commands
+
+| Task | Command |
+|------|----------|
+| Dev all | `pnpm turbo dev` |
+| Build all | `pnpm turbo build` |
+| Lint / format | `pnpm turbo lint` |
+| Graph DB start | `docker compose up neo4j` |
+| Vector DB start | `docker compose up qdrant` |
+
+---
+
+## 🧭 Roadmap
+
+- [ ] Markdown → NodeRAG entity ingestion  
+- [ ] Vector + Graph hybrid retrieval  
+- [ ] Agentic reflection with LlamaIndex  
+- [ ] Local LLM embedding via Ollama  
+- [ ] Visualization / Search UI  
+
+---
+
+> “Your computer should remember you — not the other way around.”
